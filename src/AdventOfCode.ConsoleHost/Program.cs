@@ -90,6 +90,7 @@ namespace AdventOfCode.ConsoleHost
             var exportedTypes = typeof(IDay)
                 .Assembly.GetExportedTypes()
                 .Where(p => p.Implements(typeof(IDay)))
+                .OrderBy(p => p.Name)
                 .ToList();
 
             return exportedTypes.Select(t =>
