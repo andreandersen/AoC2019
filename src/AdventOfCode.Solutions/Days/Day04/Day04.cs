@@ -1,61 +1,53 @@
 ﻿using AdventOfCode.Solutions.BuildingBlocks;
 using System;
 using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace AdventOfCode.Solutions.Days.Day04
 {
     public class Day04 : IDay
     {
-        public object First(string input)
+        public object First(string input) => RunInput(input, false);
+        public object Second(string input) => RunInput(input, true);
+
+        private static object RunInput(string input, bool secondCriterion)
         {
-            var split = input.Split('-'); ;
+            var split = input.Split('-');
             var min = int.Parse(split[0]);
             var max = int.Parse(split[1]);
-
-            ReadOnlySpan<byte> seq = split[0]
-                .Select(p => byte.Parse(p.ToString()))
-                .ToArray();
-
+            
             var validPasswords = 0;
-
             for (int i = min; i < max; i++)
-            {
-                if (Validate(i))
+                if (Validate(i, secondCriterion))
                     validPasswords++;
-            }
-
+            
             return validPasswords;
         }
 
-        [MethodImpl(
-            MethodImplOptions.AggressiveInlining |
-            MethodImplOptions.AggressiveOptimization)]
-        public static bool Validate(int password)
+        public static byte[] s_sequence = new byte[6];
+        public static bool Validate(int password, bool validateSecondCriterion = false)
         {
-            Span<byte> sequence = new byte[1 + (int)Math.Log10(password)];
-            for (int i = sequence.Length - 1; i >= 0; i--)
+            for (int i = s_sequence.Length - 1; i >= 0; i--)
             {
                 password = Math.DivRem(password, 10, out var d);
-                sequence[i] = (byte)d;
+                s_sequence[i] = (byte)d;
             }
-
-            if (sequence.Length != 6)
-                return false;
 
             bool hasDouble = false;
-            for (int i = 1; i < sequence.Length; i++)
+            bool second = false;
+            for (int i = 1; i < s_sequence.Length; i++)
             {
-                if (sequence[i] < sequence[i - 1])
+                if (s_sequence[i] < s_sequence[i - 1])
                     return false;
 
-                if (sequence[i - 1] == sequence[i])
+                if (s_sequence[i - 1] == s_sequence[i])
                     hasDouble = true;
+
+                if (validateSecondCriterion &&!second && hasDouble &&
+                    s_sequence.Count(p => p == s_sequence[i]) == 2)
+                    second = true;
             }
 
-            return hasDouble;
+            return validateSecondCriterion ? hasDouble && second : hasDouble;
         }
-
-        public object Second(string input) => 0;
     }
 }
